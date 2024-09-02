@@ -25,7 +25,7 @@ function RestaurantDetail() {
     const fetchRestaurant = async () => {
       try {
         const response = await axios.get(
-          `https://zomato-like.onrender.com/restaurants/${id}`
+          `https://zomato-like-gx27.onrender.com/restaurants/${id}`
         );
         setRestaurant(response.data);
 
