@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { Star, MapPin, ChevronRight } from "lucide-react";
 
 const FeaturedRestaurants = () => {
   const [featuredRestaurants, setFeaturedRestaurants] = useState([]);
@@ -23,16 +24,15 @@ const FeaturedRestaurants = () => {
         setLoading(false);
       }
     };
-
     fetchFeaturedRestaurants();
   }, []);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-purple-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading featured restaurants...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-indigo-500 mx-auto"></div>
+          <p className="mt-4 text-gray-300">Loading featured restaurants...</p>
         </div>
       </div>
     );
@@ -40,48 +40,54 @@ const FeaturedRestaurants = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <p className="text-red-500">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
-      <div className="rounded-2xl p-10 w-full max-w-screen-xl">
+    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-900">
+      <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-700 to-yellow-300 mb-4">
+          <h2 className="text-4xl font-bold text-white mb-4">
             Featured Restaurants
-          </h1>
-          <p className="text-gray-600 text-lg">
+          </h2>
+          <p className="text-xl text-gray-300">
             Discover top-rated dining spots handpicked for you
           </p>
         </div>
-        <nav className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-          {featuredRestaurants.map((restaurant, index) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {featuredRestaurants.map((restaurant) => (
             <Link
-              key={index}
+              key={restaurant.restaurantId}
               to={`/restaurants/${restaurant.restaurantId}`}
-              className="group bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
+              className="group bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2"
             >
-              <div className="w-full h-40 mb-4  overflow-hidden">
+              <div className="relative h-48 w-full">
                 <img
                   src={`https://picsum.photos/500/300?random=${restaurant.restaurantId}`}
                   alt={restaurant.restaurantName}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                 />
+                <div className="absolute inset-0 bg-black bg-opacity-40 transition-opacity duration-300 group-hover:opacity-0"></div>
               </div>
-              <h2 className="text-2xl font-bold text-gray-800 text-center group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-pink-600 transition-all duration-300">
-                {restaurant.restaurantName}
-              </h2>
-              <p className="text-gray-600 mt-2 text-center">
-                {restaurant.locality}
-              </p>
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-indigo-400 transition-colors duration-300">
+                  {restaurant.restaurantName}
+                </h3>
+                <div className="flex items-center mb-2">
+                  <MapPin className="w-4 h-4 text-gray-400 mr-2" />
+                  <p className="text-gray-400">{restaurant.locality}</p>
+                  <ChevronRight className="w-5 h-5 float-end text-indigo-400 group-hover:translate-x-2 transition-transform duration-300" />
+                </div>
+               
+              </div>
             </Link>
           ))}
-        </nav>
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 

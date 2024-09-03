@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import Loader from "../components/Loader";
+import Footer from "../components/Footer";
+import { Search } from 'lucide-react';
+
 
 function RestaurantList() {
   const [restaurants, setRestaurants] = useState([]);
@@ -129,97 +132,108 @@ function RestaurantList() {
 
   return (
     <>
-      <div className="min-h-screen bg-white p-8">
+      <div className="min-h-screen py-28 bg-gradient-to-br from-gray-900 to-black p-8">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-5xl font-extrabold mb-8 text-center text-red-800">
+          <h2 className="text-5xl font-extrabold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-pink-500">
             Discover Local Flavors
           </h2>
 
-          <div className="mb-8">
-            <h3 className="text-2xl font-bold mb-4">Filters</h3>
-            <div className="flex flex-col sm:flex-row sm:space-x-4">
-              <div className="relative mb-4 sm:mb-0">
-                <input
-                  type="text"
-                  name="city"
-                  value={filterInputs.city}
-                  onChange={handleFilterInputChange}
-                  onFocus={() => setCityDropdownVisible(true)}
-                  onBlur={() =>
-                    setTimeout(() => setCityDropdownVisible(false), 200)
-                  }
-                  placeholder="Filter by City"
-                  className="px-4 py-2 border border-gray-300 rounded-lg w-full"
-                />
-                {cityDropdownVisible && (
-                  <div className="absolute z-10 bg-white border border-gray-300 rounded-lg mt-1 max-h-40 overflow-y-auto">
-                    {filteredCities.length > 0 && (
-                      <ul>
-                        {filteredCities.map((city, index) => (
-                          <li
-                            key={index}
-                            onClick={() => handleCitySelect(city)}
-                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                          >
-                            {city}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div className="relative mb-4 sm:mb-0">
-                <input
-                  type="number"
-                  name="averageSpend"
-                  value={filterInputs.averageSpend}
-                  onChange={handleFilterInputChange}
-                  placeholder="Filter by Average Spend"
-                  className="px-4 py-2 border border-gray-300 rounded-lg w-full"
-                />
-              </div>
-
-              <div className="relative">
-                <input
-                  type="text"
-                  name="cuisines"
-                  value={filterInputs.cuisines}
-                  onChange={handleFilterInputChange}
-                  onFocus={() => setCuisineDropdownVisible(true)}
-                  onBlur={() =>
-                    setTimeout(() => setCuisineDropdownVisible(false), 200)
-                  }
-                  placeholder="Filter by Cuisines (comma separated)"
-                  className="px-4 py-2 border border-gray-300 rounded-lg w-full"
-                />
-                {cuisineDropdownVisible && (
-                  <div className="absolute z-10 bg-white border border-gray-300 rounded-lg mt-1 max-h-40 overflow-y-auto">
-                    {filteredCuisines.length > 0 && (
-                      <ul>
-                        {filteredCuisines.map((cuisine, index) => (
-                          <li
-                            key={index}
-                            onClick={() => handleCuisineSelect(cuisine)}
-                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                          >
-                            {cuisine}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                )}
-              </div>
+          <div className=" text-white py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h3 className="text-3xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-pink-500">
+          Filters
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="space-y-4">
+            <label htmlFor="city" className="block text-lg font-semibold text-gray-300">City</label>
+            <div className="relative">
+              <input
+                type="text"
+                id="city"
+                name="city"
+                value={filterInputs.city}
+                onChange={handleFilterInputChange}
+                onFocus={() => setCityDropdownVisible(true)}
+                onBlur={() => setTimeout(() => setCityDropdownVisible(false), 200)}
+                placeholder="Filter by City"
+                className="w-full px-4 py-2 bg-gray-800 text-white border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              {cityDropdownVisible && (
+                <div className="absolute z-10 w-full bg-gray-800 border border-gray-700 rounded-lg mt-1 max-h-40 overflow-y-auto">
+                  {filteredCities.length > 0 && (
+                    <ul>
+                      {filteredCities.map((city, index) => (
+                        <li
+                          key={index}
+                          onClick={() => handleCitySelect(city)}
+                          className="px-4 py-2 hover:bg-gray-700 cursor-pointer"
+                        >
+                          {city}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
             </div>
-            <button
-              onClick={applyFilters}
-              className="mt-4 px-6 py-3 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors duration-300"
-            >
-              Apply Filters
-            </button>
           </div>
+
+          <div className="space-y-4">
+            <label htmlFor="averageSpend" className="block text-lg font-semibold text-gray-300">Average Spend</label>
+            <input
+              type="number"
+              id="averageSpend"
+              name="averageSpend"
+              value={filterInputs.averageSpend}
+              onChange={handleFilterInputChange}
+              placeholder="Filter by Average Spend"
+              className="w-full px-4 py-2 bg-gray-800 text-white border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div className="space-y-4">
+            <label htmlFor="cuisines" className="block text-lg font-semibold text-gray-300">Cuisines</label>
+            <div className="relative">
+              <input
+                type="text"
+                id="cuisines"
+                name="cuisines"
+                value={filterInputs.cuisines}
+                onChange={handleFilterInputChange}
+                onFocus={() => setCuisineDropdownVisible(true)}
+                onBlur={() => setTimeout(() => setCuisineDropdownVisible(false), 200)}
+                placeholder="Filter by Cuisines (comma separated)"
+                className="w-full px-4 py-2 bg-gray-800 text-white border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              {cuisineDropdownVisible && (
+                <div className="absolute z-10 w-full bg-gray-800 border border-gray-700 rounded-lg mt-1 max-h-40 overflow-y-auto">
+                  {filteredCuisines.length > 0 && (
+                    <ul>
+                      {filteredCuisines.map((cuisine, index) => (
+                        <li
+                          key={index}
+                          onClick={() => handleCuisineSelect(cuisine)}
+                          className="px-4 py-2 hover:bg-gray-700 cursor-pointer"
+                        >
+                          {cuisine}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        <button
+          onClick={applyFilters}
+          className="mt-8 px-6 py-3 flex items-center justify-center text-white bg-gradient-to-r from-indigo-400 to-pink-500 rounded-full hover:from-indigo-500 hover:to-pink-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
+        >
+          <Search className="w-5 h-5 mr-2" />
+          Apply Filters
+        </button>
+      </div>
+    </div>
 
           {loading ? (
             <Loader />
@@ -258,7 +272,7 @@ function RestaurantList() {
                   <button
                     onClick={() => handlePageChange(page - 1)}
                     disabled={page === 1}
-                    className="px-6 py-3 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+                    className="mt-4 px-6 py-3 text-white bg-indigo-400 bg-gradient-to-r from-indigo-400 to-pink-800 rounded-full hover:bg-indigo-500 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
                   >
                     Previous Page
                   </button>
@@ -268,7 +282,7 @@ function RestaurantList() {
                   <button
                     onClick={() => handlePageChange(page + 1)}
                     disabled={page === totalPages}
-                    className="px-6 py-3 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+                    className="mt-4 px-6 py-3 text-white bg-indigo-400 bg-gradient-to-r from-indigo-400 to-pink-800 rounded-full hover:bg-indigo-500 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
                   >
                     Next Page
                   </button>
@@ -283,7 +297,7 @@ function RestaurantList() {
                   />
                   <button
                     onClick={() => handlePageChange(Number(inputPage))}
-                    className="ml-4 px-6 py-3 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+                    className="mt-4 px-6 py-3 text-white bg-indigo-400 bg-gradient-to-r from-indigo-400 to-pink-800 rounded-full hover:bg-indigo-500 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
                   >
                     Go
                   </button>
@@ -293,92 +307,7 @@ function RestaurantList() {
           )}
         </div>
       </div>
-      <footer className="bg-gray-800 text-white py-8">
-        <div className="max-w-screen-xl mx-auto px-6">
-          <div className="flex flex-wrap justify-between mb-8">
-            <div className="w-full md:w-1/3 mb-4 md:mb-0">
-              <h2 className="text-2xl font-semibold mb-4">About Us</h2>
-              <p className="text-gray-400">
-                Discover the best culinary experiences in your area. We provide
-                curated lists of top-rated restaurants to make dining out an
-                unforgettable experience.
-              </p>
-            </div>
-            <div className="w-full md:w-1/3 mb-4 md:mb-0">
-              <h2 className="text-2xl font-semibold mb-4">Quick Links</h2>
-              <ul>
-                <li>
-                  <Link
-                    to="/"
-                    className="text-gray-400 hover:text-white transition"
-                  >
-                    Home
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/restaurants"
-                    className="text-gray-400 hover:text-white transition"
-                  >
-                    Restaurants
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/search/location"
-                    className="text-gray-400 hover:text-white transition"
-                  >
-                    Location Search
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/search/image"
-                    className="text-gray-400 hover:text-white transition"
-                  >
-                    Image Search
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div className="w-full md:w-1/2">
-              <h2 className="text-2xl font-semibold mb-4">Follow Us</h2>
-              <div className="flex space-x-4">
-                <a
-                  href="www.facebook.com"
-                  className="text-gray-400 hover:text-white transition"
-                >
-                  <i className="fab fa-facebook-f"></i>
-                </a>
-                <a
-                  href="#"
-                  className="text-gray-400 hover:text-white transition"
-                >
-                  <i className="fab fa-twitter"></i>
-                </a>
-                <a
-                  href="#"
-                  className="text-gray-400 hover:text-white transition"
-                >
-                  <i className="fab fa-instagram"></i>
-                </a>
-                <a
-                  href="#"
-                  className="text-gray-400 hover:text-white transition"
-                >
-                  <i className="fab fa-youtube"></i>
-                </a>
-              </div>
-            </div>
-          </div>
-          <div className="border-t border-gray-700 pt-4">
-            <p className="text-center text-gray-400">
-              &copy; {new Date().getFullYear()} MyRestaurant. All rights
-              reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </>
   );
 }
