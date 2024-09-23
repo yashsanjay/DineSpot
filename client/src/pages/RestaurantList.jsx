@@ -276,7 +276,7 @@ function RestaurantList() {
                   >
                     Previous Page
                   </button>
-                  <span className="text-lg font-medium">
+                  <span className="text-lg font-medium text-white">
                     Page {page} of {totalPages}
                   </span>
                   <button
