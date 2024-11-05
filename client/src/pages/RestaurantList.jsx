@@ -153,6 +153,7 @@ function RestaurantList() {
                 name="city"
                 value={filterInputs.city}
                 onChange={handleFilterInputChange}
+                onClick={handleFilterInputChange}
                 onFocus={() => setCityDropdownVisible(true)}
                 onBlur={() => setTimeout(() => setCityDropdownVisible(false), 200)}
                 placeholder="Filter by City"
@@ -200,6 +201,7 @@ function RestaurantList() {
                 name="cuisines"
                 value={filterInputs.cuisines}
                 onChange={handleFilterInputChange}
+                onClick={handleFilterInputChange}
                 onFocus={() => setCuisineDropdownVisible(true)}
                 onBlur={() => setTimeout(() => setCuisineDropdownVisible(false), 200)}
                 placeholder="Filter by Cuisines (comma separated)"
