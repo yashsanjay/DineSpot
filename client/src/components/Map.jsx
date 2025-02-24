@@ -21,3 +21,4 @@ const Map = ({ latitude, longitude, address }) => {
 };
 
 export default Map;
+
