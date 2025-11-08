@@ -8,7 +8,7 @@ env.config();
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { GoogleAIFileManager } = require("@google/generative-ai/server");
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 const fileManager = new GoogleAIFileManager(process.env.GEMINI_KEY);
 const router = express.Router();
 const Restaurant = require("../models/Restaurant");
