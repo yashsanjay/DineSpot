@@ -52,7 +52,7 @@ function LocationSearch() {
       setInputError("");
       try {
         const response = await axios.get(
-          "http://localhost:5000/restaurants/search/location",
+          "https://zomato-like-gx27.onrender.com/restaurants/search/location",
           {
             params: {
               lat: latitude,

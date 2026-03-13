@@ -6,7 +6,7 @@ import { MapPin, Utensils, DollarSign, Star, ThumbsUp } from "lucide-react";
 import Footer from "../components/Footer";
 
 const UNSPLASH_ACCESS_KEY = "xxCNDNbKS_AQt6tXxmfP3n79P0Ae_PSqA_nnJTTGtis";
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = "https://zomato-like-gx27.onrender.com";
 
 function RestaurantDetail() {
   const { id } = useParams();

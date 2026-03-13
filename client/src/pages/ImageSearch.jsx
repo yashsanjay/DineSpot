@@ -45,7 +45,7 @@ function ImageSearch() {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/restaurants/search/image",
+        "https://zomato-like-gx27.onrender.com/restaurants/search/image",
         formData,
         {
           headers: {
