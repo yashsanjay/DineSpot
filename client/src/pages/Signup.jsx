@@ -3,43 +3,35 @@ import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 
 function Signup() {
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const navigate = useNavigate();
+  const API_BASE_URL = "https://zomato-like-gx27.onrender.com";
 
   const signup = async () => {
-
     try {
+      const res = await axios.post(`${API_BASE_URL}/auth/signup`, {
+        email,
+        password,
+      });
 
-      const res = await axios.post(
-        "https://zomato-like-gx27.onrender.com/auth/signup",
-        { email, password }
-      );
-
-     
       localStorage.setItem("userId", res.data.userId);
 
       alert("Signup successful!");
 
       navigate("/");
-
     } catch (err) {
-
       if (err.response?.data?.message) {
         alert(err.response.data.message);
       } else {
         alert("Signup failed");
       }
-
     }
-
   };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 to-black text-white">
-
       <h1 className="text-4xl font-bold mb-8">Sign Up</h1>
 
       <input
@@ -69,7 +61,6 @@ function Signup() {
           Login
         </Link>
       </p>
-
     </div>
   );
 }

@@ -11,12 +11,14 @@ function Login() {
 
   const userId = localStorage.getItem("userId");
 
+  const API_BASE_URL = "https://zomato-like-gx27.onrender.com";
+
   const login = async () => {
 
     try {
 
       const res = await axios.post(
-        "https://zomato-like-gx27.onrender.com/auth/login",
+        `${API_BASE_URL}/auth/login`,
         { email, password }
       );
 
