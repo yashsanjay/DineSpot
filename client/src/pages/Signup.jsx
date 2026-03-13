@@ -14,7 +14,7 @@ function Signup() {
     try {
 
       const res = await axios.post(
-        "http://localhost:5000/auth/signup",
+        "https://zomato-like-gx27.onrender.com/auth/signup",
         { email, password }
       );
 
