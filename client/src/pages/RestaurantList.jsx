@@ -3,8 +3,9 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import Loader from "../components/Loader";
 import Footer from "../components/Footer";
-import { Search } from 'lucide-react';
+import { Search } from "lucide-react";
 
+const API_BASE_URL = "http://localhost:5000";
 
 function RestaurantList() {
   const [restaurants, setRestaurants] = useState([]);
@@ -14,40 +15,35 @@ function RestaurantList() {
   const [loading, setLoading] = useState(true);
   const [inputPage, setInputPage] = useState("");
 
-  // Local state to hold filter inputs
   const [filterInputs, setFilterInputs] = useState({
     city: "",
-    averageSpend: "",
+    averageCostForTwo: "",
     cuisines: "",
+    rating: "",
   });
 
-  // State to hold applied filters
   const [filters, setFilters] = useState({
     city: "",
-    averageSpend: "",
+    averageCostForTwo: "",
     cuisines: "",
+    rating: "",
   });
 
-  // State to hold cities and cuisines
   const [cities, setCities] = useState([]);
   const [cuisines, setCuisines] = useState([]);
 
-  // State to manage dropdown visibility
   const [cityDropdownVisible, setCityDropdownVisible] = useState(false);
   const [cuisineDropdownVisible, setCuisineDropdownVisible] = useState(false);
 
-  // Fetch restaurants and filters
   useEffect(() => {
     const fetchFilters = async () => {
       try {
         const citiesResponse = await axios.get(
-          "https://zomato-like-gx27.onrender.com/restaurants/cities"
+          `${API_BASE_URL}/restaurants/cities`
         );
         const cuisinesResponse = await axios.get(
-          "https://zomato-like-gx27.onrender.com/restaurants/cuisines"
+          `${API_BASE_URL}/restaurants/cuisines`
         );
-        console.log("Cities response:", citiesResponse.data); // Log the response
-        console.log("Cuisines response:", cuisinesResponse.data); // Log the response
 
         setCities(citiesResponse.data);
         setCuisines(cuisinesResponse.data);
@@ -57,16 +53,20 @@ function RestaurantList() {
     };
 
     fetchFilters();
+  }, []);
 
+  useEffect(() => {
     const fetchRestaurants = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(
-          `https://zomato-like-gx27.onrender.com/restaurants?page=${page}&limit=${limit}`,
-          {
-            params: filters,
-          }
-        );
+        const response = await axios.get(`${API_BASE_URL}/restaurants`, {
+          params: {
+            page,
+            limit,
+            ...filters,
+          },
+        });
+
         setRestaurants(response.data.restaurants);
         setTotalPages(response.data.totalPages);
       } catch (error) {
@@ -97,11 +97,7 @@ function RestaurantList() {
   const handleCitySelect = (city) => {
     setFilterInputs((prevInputs) => ({
       ...prevInputs,
-      city: city,
-    }));
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      city: city,
+      city,
     }));
     setCityDropdownVisible(false);
   };
@@ -111,21 +107,31 @@ function RestaurantList() {
       ...prevInputs,
       cuisines: cuisine,
     }));
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      cuisines: cuisine,
-    }));
     setCuisineDropdownVisible(false);
   };
 
   const applyFilters = () => {
     setFilters(filterInputs);
-    setPage(1); // Reset to the first page when applying filters
+    setPage(1);
+  };
+
+  const clearFilters = () => {
+    const emptyFilters = {
+      city: "",
+      averageCostForTwo: "",
+      cuisines: "",
+      rating: "",
+    };
+
+    setFilterInputs(emptyFilters);
+    setFilters(emptyFilters);
+    setPage(1);
   };
 
   const filteredCities = cities.filter((city) =>
     city.toLowerCase().includes(filterInputs.city.toLowerCase())
   );
+
   const filteredCuisines = cuisines.filter((cuisine) =>
     cuisine.toLowerCase().includes(filterInputs.cuisines.toLowerCase())
   );
@@ -138,104 +144,153 @@ function RestaurantList() {
             Discover Local Flavors
           </h2>
 
-          <div className=" text-white py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h3 className="text-3xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-pink-500">
-          Filters
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="space-y-4">
-            <label htmlFor="city" className="block text-lg font-semibold text-gray-300">City</label>
-            <div className="relative">
-              <input
-                type="text"
-                id="city"
-                name="city"
-                value={filterInputs.city}
-                onChange={handleFilterInputChange}
-                onClick={handleFilterInputChange}
-                onFocus={() => setCityDropdownVisible(true)}
-                onBlur={() => setTimeout(() => setCityDropdownVisible(false), 200)}
-                placeholder="Filter by City"
-                className="w-full px-4 py-2 bg-gray-800 text-white border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-              {cityDropdownVisible && (
-                <div className="absolute z-10 w-full bg-gray-800 border border-gray-700 rounded-lg mt-1 max-h-40 overflow-y-auto">
-                  {filteredCities.length > 0 && (
-                    <ul>
-                      {filteredCities.map((city, index) => (
-                        <li
-                          key={index}
-                          onClick={() => handleCitySelect(city)}
-                          className="px-4 py-2 hover:bg-gray-700 cursor-pointer"
-                        >
-                          {city}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+          <div className="text-white py-16">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h3 className="text-3xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-pink-500">
+                Filters
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="space-y-4">
+                  <label
+                    htmlFor="city"
+                    className="block text-lg font-semibold text-gray-300"
+                  >
+                    City
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      id="city"
+                      name="city"
+                      value={filterInputs.city}
+                      onChange={handleFilterInputChange}
+                      onFocus={() => setCityDropdownVisible(true)}
+                      onBlur={() =>
+                        setTimeout(() => setCityDropdownVisible(false), 200)
+                      }
+                      placeholder="Filter by City"
+                      className="w-full px-4 py-2 bg-gray-800 text-white border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                    {cityDropdownVisible && (
+                      <div className="absolute z-10 w-full bg-gray-800 border border-gray-700 rounded-lg mt-1 max-h-40 overflow-y-auto">
+                        {filteredCities.length > 0 && (
+                          <ul>
+                            {filteredCities.map((city, index) => (
+                              <li
+                                key={index}
+                                onClick={() => handleCitySelect(city)}
+                                className="px-4 py-2 hover:bg-gray-700 cursor-pointer"
+                              >
+                                {city}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
+
+                <div className="space-y-4">
+                  <label
+                    htmlFor="averageCostForTwo"
+                    className="block text-lg font-semibold text-gray-300"
+                  >
+                    Average Spend
+                  </label>
+                  <input
+                    type="number"
+                    id="averageCostForTwo"
+                    name="averageCostForTwo"
+                    value={filterInputs.averageCostForTwo}
+                    onChange={handleFilterInputChange}
+                    placeholder="Maximum average spend"
+                    className="w-full px-4 py-2 bg-gray-800 text-white border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  <label
+                    htmlFor="cuisines"
+                    className="block text-lg font-semibold text-gray-300"
+                  >
+                    Cuisines
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      id="cuisines"
+                      name="cuisines"
+                      value={filterInputs.cuisines}
+                      onChange={handleFilterInputChange}
+                      onFocus={() => setCuisineDropdownVisible(true)}
+                      onBlur={() =>
+                        setTimeout(() => setCuisineDropdownVisible(false), 200)
+                      }
+                      placeholder="Filter by cuisines"
+                      className="w-full px-4 py-2 bg-gray-800 text-white border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                    {cuisineDropdownVisible && (
+                      <div className="absolute z-10 w-full bg-gray-800 border border-gray-700 rounded-lg mt-1 max-h-40 overflow-y-auto">
+                        {filteredCuisines.length > 0 && (
+                          <ul>
+                            {filteredCuisines.map((cuisine, index) => (
+                              <li
+                                key={index}
+                                onClick={() => handleCuisineSelect(cuisine)}
+                                className="px-4 py-2 hover:bg-gray-700 cursor-pointer"
+                              >
+                                {cuisine}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <label
+                    htmlFor="rating"
+                    className="block text-lg font-semibold text-gray-300"
+                  >
+                    Rating
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="5"
+                    id="rating"
+                    name="rating"
+                    value={filterInputs.rating}
+                    onChange={handleFilterInputChange}
+                    placeholder="Minimum rating"
+                    className="w-full px-4 py-2 bg-gray-800 text-white border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-8 flex flex-wrap gap-4">
+                <button
+                  onClick={applyFilters}
+                  className="px-6 py-3 flex items-center justify-center text-white bg-gradient-to-r from-indigo-400 to-pink-500 rounded-full hover:from-indigo-500 hover:to-pink-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
+                >
+                  <Search className="w-5 h-5 mr-2" />
+                  Apply Filters
+                </button>
+
+                <button
+                  onClick={clearFilters}
+                  className="px-6 py-3 text-white border border-gray-600 rounded-full hover:bg-gray-800 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
+                >
+                  Clear Filters
+                </button>
+              </div>
             </div>
           </div>
-
-          <div className="space-y-4">
-            <label htmlFor="averageSpend" className="block text-lg font-semibold text-gray-300">Average Spend</label>
-            <input
-              type="number"
-              id="averageSpend"
-              name="averageSpend"
-              value={filterInputs.averageSpend}
-              onChange={handleFilterInputChange}
-              placeholder="Filter by Average Spend"
-              className="w-full px-4 py-2 bg-gray-800 text-white border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-
-          <div className="space-y-4">
-            <label htmlFor="cuisines" className="block text-lg font-semibold text-gray-300">Cuisines</label>
-            <div className="relative">
-              <input
-                type="text"
-                id="cuisines"
-                name="cuisines"
-                value={filterInputs.cuisines}
-                onChange={handleFilterInputChange}
-                onClick={handleFilterInputChange}
-                onFocus={() => setCuisineDropdownVisible(true)}
-                onBlur={() => setTimeout(() => setCuisineDropdownVisible(false), 200)}
-                placeholder="Filter by Cuisines (comma separated)"
-                className="w-full px-4 py-2 bg-gray-800 text-white border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-              {cuisineDropdownVisible && (
-                <div className="absolute z-10 w-full bg-gray-800 border border-gray-700 rounded-lg mt-1 max-h-40 overflow-y-auto">
-                  {filteredCuisines.length > 0 && (
-                    <ul>
-                      {filteredCuisines.map((cuisine, index) => (
-                        <li
-                          key={index}
-                          onClick={() => handleCuisineSelect(cuisine)}
-                          className="px-4 py-2 hover:bg-gray-700 cursor-pointer"
-                        >
-                          {cuisine}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-        <button
-          onClick={applyFilters}
-          className="mt-8 px-6 py-3 flex items-center justify-center text-white bg-gradient-to-r from-indigo-400 to-pink-500 rounded-full hover:from-indigo-500 hover:to-pink-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
-        >
-          <Search className="w-5 h-5 mr-2" />
-          Apply Filters
-        </button>
-      </div>
-    </div>
 
           {loading ? (
             <Loader />
@@ -269,27 +324,31 @@ function RestaurantList() {
                   </Link>
                 ))}
               </div>
+
               <div className="mt-12 flex flex-col items-center space-y-4">
                 <div className="flex items-center space-x-4">
                   <button
                     onClick={() => handlePageChange(page - 1)}
                     disabled={page === 1}
-                    className="mt-4 px-6 py-3 text-white bg-indigo-400 bg-gradient-to-r from-indigo-400 to-pink-800 rounded-full hover:bg-indigo-500 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
+                    className="mt-4 px-6 py-3 text-white bg-indigo-400 bg-gradient-to-r from-indigo-400 to-pink-800 rounded-full hover:bg-indigo-500 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 disabled:opacity-50"
                   >
                     Previous Page
                   </button>
+
                   <span className="text-lg font-medium text-white">
                     Page {page} of {totalPages}
                   </span>
+
                   <button
                     onClick={() => handlePageChange(page + 1)}
                     disabled={page === totalPages}
-                    className="mt-4 px-6 py-3 text-white bg-indigo-400 bg-gradient-to-r from-indigo-400 to-pink-800 rounded-full hover:bg-indigo-500 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
+                    className="mt-4 px-6 py-3 text-white bg-indigo-400 bg-gradient-to-r from-indigo-400 to-pink-800 rounded-full hover:bg-indigo-500 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 disabled:opacity-50"
                   >
                     Next Page
                   </button>
                 </div>
-                <div className="mt-4">
+
+                <div className="mt-4 flex items-center gap-3">
                   <input
                     type="number"
                     value={inputPage}
@@ -299,7 +358,7 @@ function RestaurantList() {
                   />
                   <button
                     onClick={() => handlePageChange(Number(inputPage))}
-                    className="mt-4 px-6 py-3 text-white bg-indigo-400 bg-gradient-to-r from-indigo-400 to-pink-800 rounded-full hover:bg-indigo-500 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
+                    className="px-6 py-3 text-white bg-indigo-400 bg-gradient-to-r from-indigo-400 to-pink-800 rounded-full hover:bg-indigo-500 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
                   >
                     Go
                   </button>
