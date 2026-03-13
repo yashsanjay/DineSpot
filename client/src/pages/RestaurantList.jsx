@@ -5,7 +5,7 @@ import Loader from "../components/Loader";
 import Footer from "../components/Footer";
 import { Search } from "lucide-react";
 
-const API_BASE_URL = "https://zomato-like-gx27.onrender.com";
+const API_BASE_URL = "http://localhost:5000";
 
 function RestaurantList() {
   const [restaurants, setRestaurants] = useState([]);

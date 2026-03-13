@@ -34,6 +34,24 @@ const restaurantSchema = new mongoose.Schema({
       required: true,
     },
   },
+  ratings: [
+    {
+      userId: {
+        type: String,
+        required: true,
+      },
+      rating: {
+        type: Number,
+        required: true,
+        min: 1,
+        max: 5,
+      },
+    },
+  ],
+  averageRating: {
+    type: Number,
+    default: 0,
+  },
 });
 
 const Restaurant = mongoose.model("Restaurant", restaurantSchema);

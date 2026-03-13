@@ -7,9 +7,12 @@ env.config();
 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { GoogleAIFileManager } = require("@google/generative-ai/server");
+
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
 const fileManager = new GoogleAIFileManager(process.env.GEMINI_KEY);
+
 const router = express.Router();
 const Restaurant = require("../models/Restaurant");
 
@@ -83,7 +86,7 @@ router.post("/search/image", upload.single("image"), async (req, res) => {
     }
 
     const prompt =
-      "Answer in one word: Which cuisine is represented in the image from the given options?? [French, Japanese, Desserts, Seafood, Asian, Filipino, Indian, Sushi, Korean, Chinese, European, Mexican, American, Ice Cream, Cafe, Italian, Pizza, Bakery, Mediterranean, Fast Food, Brazilian, Arabian, Bar Food, Grill, International, Peruvian, Latin American, Burger, Juices, Healthy Food, Beverages, Lebanese, Sandwich, Steak, BBQ, Gourmet Fast Food, Mineira, North Eastern, Coffee and Tea, Vegetarian, Tapas, Breakfast, Diner, Southern, Southwestern, Spanish, Argentine, Caribbean, German, Vietnamese, Thai, Modern Australian, Teriyaki, Cajun, Canadian, Tex-Mex, Middle Eastern, Greek, Bubble Tea, Tea, Australian, Fusion, Cuban, Hawaiian, Salad, Irish, New American, Soul Food, Turkish, Pub Food, Persian, Continental, Singaporean, Malay, Cantonese, Dim Sum, Western, Finger Food, British, Deli, Indonesian, North Indian, Mughlai, Biryani, South Indian, Pakistani, Afghani, Hyderabadi, Rajasthani, Street Food, Goan, African, Portuguese, Gujarati, Armenian, Mithai, Maharashtrian, Modern Indian, Charcoal Grill, Malaysian, Burmese, Chettinad, Parsi, Tibetan, Raw Meats, Kerala, Belgian, Kashmiri, South American, Bengali, Iranian, Lucknowi, Awadhi, Nepalese, Drinks Only, Oriya, Bihari, Assamese, Andhra, Mangalorean, Malwani, Cuisine Varies, Moroccan, Naga, Sri Lankan, Peranakan, Sunda, Ramen, Kiwi, Asian Fusion, Taiwanese, Fish and Chips, Contemporary, Scottish, Curry, Patisserie, South African, Durban, Kebab, Turkish Pizza, Izgara, World Cuisine]";
+      "Answer in one word: Which cuisine is represented in the image?";
 
     const uploadResult = await fileManager.uploadFile(image.path, {
       mimeType: image.mimetype || "image/jpeg",
@@ -100,15 +103,11 @@ router.post("/search/image", upload.single("image"), async (req, res) => {
       { text: prompt },
     ]);
 
-    const filterCuisine = result.response.text().replace("Answer:", "").trim();
+    const filterCuisine = result.response.text().trim();
 
     await fileManager.deleteFile(uploadResult.file.name);
 
-    fs.unlink(image.path, (err) => {
-      if (err) {
-        console.error("Error deleting local uploaded file:", err);
-      }
-    });
+    fs.unlink(image.path, () => {});
 
     const restaurants = await Restaurant.find({ cuisines: filterCuisine });
 
@@ -162,27 +161,15 @@ router.get("/", async (req, res) => {
 
     if (rating) {
       pipeline.push({
-        $addFields: {
-          aggregateRatingNumber: {
-            $convert: {
-              input: "$aggregateRating",
-              to: "double",
-              onError: 0,
-              onNull: 0,
-            },
-          },
-        },
-      });
-
-      pipeline.push({
         $match: {
-          aggregateRatingNumber: { $gte: parseFloat(rating) },
+          averageRating: { $gte: parseFloat(rating) },
         },
       });
     }
 
     const countPipeline = [...pipeline, { $count: "totalCount" }];
     const countResult = await Restaurant.aggregate(countPipeline);
+
     const totalCount = countResult[0]?.totalCount || 0;
     const totalPages = Math.ceil(totalCount / limitNumber);
 
@@ -214,6 +201,62 @@ router.get("/:id", async (req, res) => {
     }
 
     res.json(restaurant);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server error");
+  }
+});
+
+router.post("/:id/rate", async (req, res) => {
+  try {
+    const { userId, rating } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({
+        message: "You must be logged in to rate",
+      });
+    }
+
+    const numericRating = Number(rating);
+
+    if (!numericRating || numericRating < 1 || numericRating > 5) {
+      return res.status(400).json({
+        message: "Rating must be between 1 and 5",
+      });
+    }
+
+    const restaurant = await Restaurant.findOne({
+      restaurantId: req.params.id,
+    });
+
+    if (!restaurant) {
+      return res.status(404).send("Restaurant not found");
+    }
+
+    const existingRating = restaurant.ratings.find(
+      (r) => r.userId === userId
+    );
+
+    if (existingRating) {
+      existingRating.rating = numericRating;
+    } else {
+      restaurant.ratings.push({
+        userId,
+        rating: numericRating,
+      });
+    }
+
+    const total = restaurant.ratings.reduce((sum, r) => sum + r.rating, 0);
+    restaurant.averageRating = total / restaurant.ratings.length;
+
+    await restaurant.save();
+
+    res.json({
+      message: existingRating
+        ? "Rating updated successfully"
+        : "Rating submitted successfully",
+      averageRating: restaurant.averageRating,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).send("Server error");
