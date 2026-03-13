@@ -46,17 +46,73 @@ router.get("/cuisines", async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/search/location", async (req, res) => {
   try {
-    const restaurant = await Restaurant.findOne({
-      restaurantId: req.params.id,
-    });
+    const { lat, long, radius } = req.query;
 
-    if (!restaurant) {
-      return res.status(404).send("Restaurant not found");
+    if (!lat || !long || !radius) {
+      return res.status(400).send("Missing required query parameters.");
     }
 
-    res.json(restaurant);
+    const radiusInRadians = parseFloat(radius) / 6378.1;
+
+    const restaurants = await Restaurant.find({
+      location: {
+        $geoWithin: {
+          $centerSphere: [
+            [parseFloat(long), parseFloat(lat)],
+            radiusInRadians,
+          ],
+        },
+      },
+    });
+
+    res.json(restaurants);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server error");
+  }
+});
+
+router.post("/search/image", upload.single("image"), async (req, res) => {
+  try {
+    const image = req.file;
+
+    if (!image) {
+      return res.status(400).send("No image uploaded");
+    }
+
+    const prompt =
+      "Answer in one word: Which cuisine is represented in the image from the given options?? [French, Japanese, Desserts, Seafood, Asian, Filipino, Indian, Sushi, Korean, Chinese, European, Mexican, American, Ice Cream, Cafe, Italian, Pizza, Bakery, Mediterranean, Fast Food, Brazilian, Arabian, Bar Food, Grill, International, Peruvian, Latin American, Burger, Juices, Healthy Food, Beverages, Lebanese, Sandwich, Steak, BBQ, Gourmet Fast Food, Mineira, North Eastern, Coffee and Tea, Vegetarian, Tapas, Breakfast, Diner, Southern, Southwestern, Spanish, Argentine, Caribbean, German, Vietnamese, Thai, Modern Australian, Teriyaki, Cajun, Canadian, Tex-Mex, Middle Eastern, Greek, Bubble Tea, Tea, Australian, Fusion, Cuban, Hawaiian, Salad, Irish, New American, Soul Food, Turkish, Pub Food, Persian, Continental, Singaporean, Malay, Cantonese, Dim Sum, Western, Finger Food, British, Deli, Indonesian, North Indian, Mughlai, Biryani, South Indian, Pakistani, Afghani, Hyderabadi, Rajasthani, Street Food, Goan, African, Portuguese, Gujarati, Armenian, Mithai, Maharashtrian, Modern Indian, Charcoal Grill, Malaysian, Burmese, Chettinad, Parsi, Tibetan, Raw Meats, Kerala, Belgian, Kashmiri, South American, Bengali, Iranian, Lucknowi, Awadhi, Nepalese, Drinks Only, Oriya, Bihari, Assamese, Andhra, Mangalorean, Malwani, Cuisine Varies, Moroccan, Naga, Sri Lankan, Peranakan, Sunda, Ramen, Kiwi, Asian Fusion, Taiwanese, Fish and Chips, Contemporary, Scottish, Curry, Patisserie, South African, Durban, Kebab, Turkish Pizza, Izgara, World Cuisine]";
+
+    const uploadResult = await fileManager.uploadFile(image.path, {
+      mimeType: image.mimetype || "image/jpeg",
+      displayName: "Food",
+    });
+
+    const result = await model.generateContent([
+      {
+        fileData: {
+          mimeType: uploadResult.file.mimeType,
+          fileUri: uploadResult.file.uri,
+        },
+      },
+      { text: prompt },
+    ]);
+
+    const filterCuisine = result.response.text().replace("Answer:", "").trim();
+
+    await fileManager.deleteFile(uploadResult.file.name);
+
+    fs.unlink(image.path, (err) => {
+      if (err) {
+        console.error("Error deleting local uploaded file:", err);
+      }
+    });
+
+    const restaurants = await Restaurant.find({ cuisines: filterCuisine });
+
+    res.json(restaurants);
   } catch (err) {
     console.error(err);
     res.status(500).send("Server error");
@@ -147,73 +203,17 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/search/location", async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
-    const { lat, long, radius } = req.query;
+    const restaurant = await Restaurant.findOne({
+      restaurantId: req.params.id,
+    });
 
-    if (!lat || !long || !radius) {
-      return res.status(400).send("Missing required query parameters.");
+    if (!restaurant) {
+      return res.status(404).send("Restaurant not found");
     }
 
-    const radiusInRadians = parseFloat(radius) / 6378.1;
-
-    const restaurants = await Restaurant.find({
-      location: {
-        $geoWithin: {
-          $centerSphere: [
-            [parseFloat(long), parseFloat(lat)],
-            radiusInRadians,
-          ],
-        },
-      },
-    });
-
-    res.json(restaurants);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Server error");
-  }
-});
-
-router.post("/search/image", upload.single("image"), async (req, res) => {
-  try {
-    const image = req.file;
-
-    if (!image) {
-      return res.status(400).send("No image uploaded");
-    }
-
-    const prompt =
-      "Answer in one word: Which cuisine is represented in the image from the given options?? [French, Japanese, Desserts, Seafood, Asian, Filipino, Indian, Sushi, Korean, Chinese, European, Mexican, American, Ice Cream, Cafe, Italian, Pizza, Bakery, Mediterranean, Fast Food, Brazilian, Arabian, Bar Food, Grill, International, Peruvian, Latin American, Burger, Juices, Healthy Food, Beverages, Lebanese, Sandwich, Steak, BBQ, Gourmet Fast Food, Mineira, North Eastern, Coffee and Tea, Vegetarian, Tapas, Breakfast, Diner, Southern, Southwestern, Spanish, Argentine, Caribbean, German, Vietnamese, Thai, Modern Australian, Teriyaki, Cajun, Canadian, Tex-Mex, Middle Eastern, Greek, Bubble Tea, Tea, Australian, Fusion, Cuban, Hawaiian, Salad, Irish, New American, Soul Food, Turkish, Pub Food, Persian, Continental, Singaporean, Malay, Cantonese, Dim Sum, Western, Finger Food, British, Deli, Indonesian, North Indian, Mughlai, Biryani, South Indian, Pakistani, Afghani, Hyderabadi, Rajasthani, Street Food, Goan, African, Portuguese, Gujarati, Armenian, Mithai, Maharashtrian, Modern Indian, Charcoal Grill, Malaysian, Burmese, Chettinad, Parsi, Tibetan, Raw Meats, Kerala, Belgian, Kashmiri, South American, Bengali, Iranian, Lucknowi, Awadhi, Nepalese, Drinks Only, Oriya, Bihari, Assamese, Andhra, Mangalorean, Malwani, Cuisine Varies, Moroccan, Naga, Sri Lankan, Peranakan, Sunda, Ramen, Kiwi, Asian Fusion, Taiwanese, Fish and Chips, Contemporary, Scottish, Curry, Patisserie, South African, Durban, Kebab, Turkish Pizza, Izgara, World Cuisine]";
-
-    const uploadResult = await fileManager.uploadFile(image.path, {
-      mimeType: image.mimetype || "image/jpeg",
-      displayName: "Food",
-    });
-
-    const result = await model.generateContent([
-      {
-        fileData: {
-          mimeType: uploadResult.file.mimeType,
-          fileUri: uploadResult.file.uri,
-        },
-      },
-      { text: prompt },
-    ]);
-
-    const filterCuisine = result.response.text().replace("Answer:", "").trim();
-
-    await fileManager.deleteFile(uploadResult.file.name);
-
-    fs.unlink(image.path, (err) => {
-      if (err) {
-        console.error("Error deleting local uploaded file:", err);
-      }
-    });
-
-    const restaurants = await Restaurant.find({ cuisines: filterCuisine });
-
-    res.json(restaurants);
+    res.json(restaurant);
   } catch (err) {
     console.error(err);
     res.status(500).send("Server error");
